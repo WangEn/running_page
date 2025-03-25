@@ -12,7 +12,7 @@ interface ISiteMetadataResult {
 const data: ISiteMetadataResult = {
   siteTitle: 'Running Page',
   siteUrl: 'https://run.imwarn.com',
-  logo: 'https://source.imwarn.com/blog/assets/brand_logo.k_gvkHeA_Z2rxCYz.png',
+  logo: 'https://source.imwarn.com/2025/03/7edef04276e7647a5555f93267fd070f.png',
   description: 'Personal site and blog',
   navLinks: [
     {
