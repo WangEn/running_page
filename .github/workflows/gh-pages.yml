@@ -48,9 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # if your default branches is not master, please change it here
-          ref: master
+          ref: main
           fetch-depth: 0
-          persist-credentials: false 
+          persist-credentials: false
 
       - name: Cache Data Files
         if: inputs.save_data_in_github_cache
@@ -76,7 +76,7 @@ jobs:
         with:
           node-version: '20'
       - name: Enable corepack
-        run: npm install -g corepack@latest && corepack enable pnpm 
+        run: npm install -g corepack@latest && corepack enable pnpm
 
       - name: Get pnpm store directory
         shell: bash
