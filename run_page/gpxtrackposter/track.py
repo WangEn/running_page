@@ -49,6 +49,7 @@ class Track:
         self.length = 0
         self.special = False
         self.average_heartrate = None
+        self.elevation_gain = None
         self.moving_dict = {}
         self.run_id = 0
         self.start_latlng = []
@@ -100,11 +101,17 @@ class Track:
             stream = Stream.from_file(file_name)
             decoder = Decoder(stream)
             messages, errors = decoder.read(convert_datetimes_to_dates=False)
-            # Handle empty fit files that have no distance data
-            if messages.get("total_distance") is None:
-                return
             if errors:
                 print(f"FIT file read fail: {errors}")
+                return
+            if (
+                messages.get("session_mesgs") is None
+                or messages.get("session_mesgs")[0].get("total_distance") is None
+            ):
+                print(
+                    f"Session message or total distance is missing when loading FIT. for file {self.file_names[0]}, we just ignore this file and continue"
+                )
+                return
             self._load_fit_data(messages)
         except Exception as e:
             print(
@@ -171,6 +178,7 @@ class Track:
             except:
                 pass
             self.polyline_str = polyline.encode(polyline_container)
+        self.elevation_gain = tcx.ascent
         self.moving_dict = {
             "distance": self.length,
             "moving_time": datetime.timedelta(seconds=moving_time),
@@ -236,6 +244,7 @@ class Track:
             sum(heart_rate_list) / len(heart_rate_list) if heart_rate_list else None
         )
         self.moving_dict = self._get_moving_data(gpx)
+        self.elevation_gain = gpx.get_uphill_downhill().uphill
 
     def _load_fit_data(self, fit: dict):
         _polylines = []
@@ -319,6 +328,10 @@ class Track:
             )
             self.file_names.extend(other.file_names)
             self.special = self.special or other.special
+            self.average_heartrate = self.average_heartrate or other.average_heartrate
+            self.elevation_gain = (
+                self.elevation_gain if self.elevation_gain else 0
+            ) + (other.elevation_gain if other.elevation_gain else 0)
         except:
             print(
                 f"something wrong append this {self.end_time},in files {str(self.file_names)}"
@@ -355,6 +368,7 @@ class Track:
             "average_heartrate": (
                 int(self.average_heartrate) if self.average_heartrate else None
             ),
+            "elevation_gain": (int(self.elevation_gain) if self.elevation_gain else 0),
             "map": run_map(self.polyline_str),
             "start_latlng": self.start_latlng,
         }
